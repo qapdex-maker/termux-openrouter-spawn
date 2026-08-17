@@ -12,69 +12,37 @@ This guide helps you install **Bun** natively inside **Termux** using a **GLIBC*
 
 ## Quick Installation
 
-Copy and paste the following blocks directly into your Termux terminal.
-
-### 1. Setup GLIBC Repository & Prerequisites
-We need to enable the GLIBC repository, update the package indexes, and install the required build tools.
-
-```bash
-# Enable GLIBC repository and update indexes
-pkg install glibc-repo -y
-pkg update -y
-
-# Install all required compiler tools and dependencies
-pkg install git curl clang make glibc-repo python glibc-runner-y
-pkg install proot -y
-```
-
-### 2. Install Bun & Apply Native Wrapper
-Since Bun is compiled for standard Linux (`glibc`) and not Android's `bionic libc`, we install Bun and compile a lightweight system-call translation shim.
+The steps below are codified in [`install.sh`](./install.sh) — a copy-paste-safe,
+re-runnable installer that fixes the path-expansion and chroot pitfalls of the
+earlier manual blocks.
 
 ```bash
-# Clone and compile the native Termux compatibility wrapper
-git clone https://github.com/Happ1ness-dev/bun-termux.git
-cd bun-termux
-make && make install
+# Clone and run (Termux only)
+gh repo clone qapdex-maker/termux-openrouter-spawn
+cd termux-openrouter-spawn
+bash install.sh
 
-# Reload profile configuration
-source ~/.bashrc
-
-# Verify Bun installation
-bun --version
+# or just download the script
+curl -fsSL https://raw.githubusercontent.com/qapdex-maker/termux-openrouter-spawn/main/install.sh | bash
 ```
 
-### 3. Configure Environment Variables
-Add Bun and local binaries to your shell profile path so they can be executed globally.
+What it does:
+1. Enables the GLIBC repo and installs the toolchain (`glibc-repo`, `clang`,
+   `proot`, ...).
+2. Builds **Bun** via the native Termux compatibility wrapper
+   ([bun-termux](https://github.com/Happ1ness-dev/bun-termux)) — Bun is built
+   for glibc, not Android's bionic libc, so the shim is required.
+3. Writes env vars to `~/.bashrc` with **correct `$PATH` expansion**
+   (`$HOME/.local/bin:$PATH`, not the literal `HOME/...:PATH` bug from before)
+   and gates `termux-chroot` to **interactive shells only** so non-interactive
+   tools (cron, ssh, scripts) keep working.
+4. Installs the **OpenRouter Spawn CLI** from the official installer.
+
+Verify any time without changing anything:
 
 ```bash
-# Append variables to bash profile
-echo 'export BUN_INSTALL="\$HOME/.bun"' >> ~/.bashrc
-echo 'export PATH="\$BUN_INSTALL/bin:HOME/.local/bin:PATH"' >> ~/.bashrc
-echo 'export TMPDIR="$PREFIX/tmp"' >> ~/.bashrc
-echo 'export TEMP="$PREFIX/tmp"' >> ~/.bashrc
-echo 'export TMP="$PREFIX/tmp"' >> ~/.bashrc
-echo -e '\n# termux-chroot\nif [ -z "$TERMUX_CHROOT_ACTIVE" ]; then\n    export TERMUX_CHROOT_ACTIVE=1\n    exec termux-chroot\nfi' >> ~/.bashrc
-source ~/.bashrc
-
-# Reload profile configurations
-source ~/.bashrc
-
-# Verify Bun installation
-bun --version
+bash install.sh --verify
 ```
-
-### 4. Install OpenRouter Spawn CLI
-Now that Bun is globally accessible, the OpenRouter installer will execute successfully.
-
-```bash
-# Run the official installer
-curl -fsSL https://openrouter.ai/labs/spawn/cli/install.sh | bash
-
-# Verify Spawn installation
-spawn --help
-```
-
----
 
 ## Usage & AI Agent Setup
 
@@ -92,9 +60,11 @@ To start with agentic workflows using models like `openrouter/owl-alpha`:
 ## Troubleshooting
 
 ### Node.js Compatibility Fix
-If some third-party build scripts or global packages inside Termux fail because they specifically look for a `node` binary, you can safely symlink your native Bun installation to act as Node:
+If some third-party build scripts or global packages inside Termux fail because
+they specifically look for a `node` binary, the installer symlinks Bun to act
+as Node automatically. To do it manually:
 ```bash
-ln -s HOME/.bun/bin/bun HOME/.bun/bin/node
+ln -s "$HOME/.bun/bin/bun" "$HOME/.bun/bin/node"
 ```
 
 ## Credits
