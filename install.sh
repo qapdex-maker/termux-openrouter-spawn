@@ -69,11 +69,13 @@ if command -v bun >/dev/null 2>&1; then
 else
   log "Cloning bun-termux (pinned: $BUN_TERMUX_REF)..."
   tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT INT TERM
   git clone --depth 1 --branch "$BUN_TERMUX_REF" "$BUN_TERMUX_REPO" "$tmp/bun-termux"
   cd "$tmp/bun-termux"
   make && make install
   cd "$HOME"
   rm -rf "$tmp"
+  trap - EXIT INT TERM
 fi
 
 # Reload so bun is on PATH for the rest of this run.
@@ -129,9 +131,14 @@ if command -v spawn >/dev/null 2>&1; then
   ok "spawn already installed — skipping"
 else
   log "Running OpenRouter Spawn installer ($SPAWN_INSTALLER)..."
-  warn "Installer is fetched from an external host and piped to bash."
   warn "Verify the source at $SPAWN_INSTALLER before trusting it in production."
-  curl -fsSL "$SPAWN_INSTALLER" | bash
+  # Download to a temporary file before execution to prevent partial script execution on network interruption
+  spawn_tmp="$(mktemp)"
+  trap 'rm -f "$spawn_tmp"' EXIT INT TERM
+  curl -fsSL "$SPAWN_INSTALLER" -o "$spawn_tmp"
+  bash "$spawn_tmp"
+  rm -f "$spawn_tmp"
+  trap - EXIT INT TERM
 fi
 
 # ---------------------------------------------------------------------------
