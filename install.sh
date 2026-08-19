@@ -13,6 +13,7 @@
 # Usage:
 #   bash install.sh            # full install
 #   bash install.sh --verify    # only check current environment
+#   bash install.sh -h | --help # display usage information
 #
 # Safe to re-run: idempotent guards skip already-done steps.
 
@@ -28,6 +29,18 @@ log()  { printf '\033[0;34m[spawn]\033[0m %s\n' "$*"; }
 ok()   { printf '\033[0;32m[spawn]\033[0m %s\n' "$*"; }
 warn() { printf '\033[0;33m[spawn]\033[0m %s\n' "$*"; }
 err()  { printf '\033[0;31m[spawn]\033[0m %s\n' "$*" >&2; }
+
+# ---------------------------------------------------------------------------
+# Help mode: display usage information.
+# ---------------------------------------------------------------------------
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+  printf "Usage: install.sh [--verify | -h | --help]\n\n"
+  printf "Options:\n"
+  printf "  (no args)    Full installation of Bun (glibc) and OpenRouter Spawn CLI\n"
+  printf "  --verify     Check current environment without changing anything\n"
+  printf "  -h, --help   Display this help message\n"
+  exit 0
+fi
 
 is_termux() {
   [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux/files/usr"* ]]
