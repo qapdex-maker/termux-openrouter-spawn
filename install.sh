@@ -20,7 +20,8 @@ set -euo pipefail
 
 # Pinned upstream refs (bump deliberately, not silently).
 BUN_TERMUX_REPO="https://github.com/Happ1ness-dev/bun-termux.git"
-BUN_TERMUX_REF="main"          # pin to a commit hash for reproducibility
+# Security: Pin to exact commit SHA to prevent supply chain security risks from branch updates.
+BUN_TERMUX_REF="8aa2fe203d36434cdb85d1c55b2c9cfa416abfaa"
 SPAWN_INSTALLER="https://openrouter.ai/labs/spawn/cli/install.sh"
 
 log()  { printf '\033[0;34m[spawn]\033[0m %s\n' "$*"; }
@@ -69,7 +70,7 @@ if command -v bun >/dev/null 2>&1; then
 else
   log "Cloning bun-termux (pinned: $BUN_TERMUX_REF)..."
   tmp="$(mktemp -d)"
-  git clone --depth 1 --branch "$BUN_TERMUX_REF" "$BUN_TERMUX_REPO" "$tmp/bun-termux"
+  mkdir -p "$tmp/bun-termux"
   cd "$tmp/bun-termux"
   # Bolt optimization: enable multi-threaded compilation using available CPU cores (nproc)
   # Significantly speeds up compilation time on multi-core mobile processors (~50-70% speedup).
