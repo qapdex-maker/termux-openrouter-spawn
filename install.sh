@@ -109,8 +109,12 @@ else
   log "Cloning bun-termux (pinned: $BUN_TERMUX_REF)..."
   tmp="$(mktemp -d)"
   trap 'rm -rf "$tmp"' EXIT INT TERM
-  git clone --depth 1 --branch "$BUN_TERMUX_REF" "$BUN_TERMUX_REPO" "$tmp/bun-termux"
+  mkdir -p "$tmp/bun-termux"
   cd "$tmp/bun-termux"
+  git init
+  git remote add origin "$BUN_TERMUX_REPO"
+  git fetch --depth 1 origin "$BUN_TERMUX_REF"
+  git checkout FETCH_HEAD
   # Bolt optimization: enable multi-threaded compilation using available CPU cores (nproc)
   # Significantly speeds up compilation time on multi-core mobile processors (~50-70% speedup).
   NPROC="$(nproc 2>/dev/null || echo 2)"
