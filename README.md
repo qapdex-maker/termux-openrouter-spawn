@@ -23,7 +23,7 @@ cd termux-openrouter-spawn
 bash install.sh
 ```
 
-## or just download the script
+## 
 ```
 curl -fsSL https://raw.githubusercontent.com/qapdex-maker/termux-openrouter-spawn/main/install.sh | bash
 ```
