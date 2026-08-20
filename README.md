@@ -35,7 +35,7 @@ What it does:
    ([bun-termux](https://github.com/Happ1ness-dev/bun-termux)) — Bun is built
    for glibc, not Android's bionic libc, so the shim is required.
 3. Writes env vars to `~/.bashrc` with **correct `$PATH` expansion**
-   (`$HOME/.local/bin:$PATH`, not the literal `HOME/...:PATH` bug from before)
+   (`$HOME/.local/bin:$PATH`)
    and gates `termux-chroot` to **interactive shells only** so non-interactive
    tools (cron, ssh, scripts) keep working.
 4. Installs the **OpenRouter Spawn CLI** from the official installer.
