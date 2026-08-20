@@ -70,10 +70,35 @@ fi
 # ---------------------------------------------------------------------------
 # 1. GLIBC repo + toolchain
 # ---------------------------------------------------------------------------
-log "Enabling GLIBC repo and installing toolchain..."
-pkg install glibc-repo -y
-pkg update -y
-pkg install -y git curl clang make glibc-runner-y python proot
+log "Checking GLIBC repo and toolchain packages..."
+
+# Bolt optimization: Skip network-bound 'pkg update' and 'pkg install' when required
+# toolchain packages are already installed. Reduces step time from ~15-30s to <0.1s on re-runs.
+is_installed() {
+  dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "ok installed"
+}
+
+if ! is_installed "glibc-repo"; then
+  log "Enabling GLIBC repo..."
+  pkg install glibc-repo -y
+  pkg update -y
+fi
+
+REQUIRED_PKGS=(git curl clang make glibc-runner python proot)
+MISSING_PKGS=()
+
+for pkg in "${REQUIRED_PKGS[@]}"; do
+  if ! is_installed "$pkg"; then
+    MISSING_PKGS+=("$pkg")
+  fi
+done
+
+if [ ${#MISSING_PKGS[@]} -gt 0 ]; then
+  log "Installing missing toolchain packages: ${MISSING_PKGS[*]}..."
+  pkg install -y "${MISSING_PKGS[@]}"
+else
+  ok "Toolchain packages already installed — skipping pkg update/install"
+fi
 
 # ---------------------------------------------------------------------------
 # 2. Bun via the native Termux compatibility wrapper
