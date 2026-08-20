@@ -26,9 +26,9 @@ BUN_TERMUX_REF="8aa2fe203d36434cdb85d1c55b2c9cfa416abfaa"
 SPAWN_INSTALLER="https://openrouter.ai/labs/spawn/cli/install.sh"
 
 log()  { printf '\033[0;34m[spawn]\033[0m %s\n' "$*"; }
-ok()   { printf '\033[0;32m[spawn]\033[0m %s\n' "$*"; }
-warn() { printf '\033[0;33m[spawn]\033[0m %s\n' "$*"; }
-err()  { printf '\033[0;31m[spawn]\033[0m %s\n' "$*" >&2; }
+ok()   { printf '\033[0;32m[spawn] ✓\033[0m %s\n' "$*"; }
+warn() { printf '\033[0;33m[spawn] ⚠\033[0m %s\n' "$*"; }
+err()  { printf '\033[0;31m[spawn] ✖\033[0m %s\n' "$*" >&2; }
 
 # ---------------------------------------------------------------------------
 # Help mode: display usage information.
@@ -56,7 +56,16 @@ fi
 # ---------------------------------------------------------------------------
 if [ "${1:-}" = "--verify" ]; then
   log "Verification mode"
-  command -v bun      >/dev/null 2>&1 && bun --version      && ok "bun present"      || warn "bun missing"
+  if command -v bun >/dev/null 2>&1; then
+    bun_ver="$(bun --version 2>/dev/null || true)"
+    if [ -n "$bun_ver" ]; then
+      ok "bun present (v${bun_ver})"
+    else
+      ok "bun present"
+    fi
+  else
+    warn "bun missing"
+  fi
   command -v spawn    >/dev/null 2>&1 && spawn --help >/dev/null 2>&1 && ok "spawn present" || warn "spawn missing"
   [ -n "${OPENROUTER_API_KEY:-}" ] && ok "OPENROUTER_API_KEY set" || warn "OPENROUTER_API_KEY not set"
   # PATH check: does it actually contain the bun + local bin dirs?
