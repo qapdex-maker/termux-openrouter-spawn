@@ -190,7 +190,7 @@ else
   # Download to a temporary file before execution to prevent partial script execution on network interruption
   spawn_tmp="$(mktemp)"
   trap 'rm -f "$spawn_tmp"' EXIT INT TERM
-  curl -fsSL "$SPAWN_INSTALLER" -o "$spawn_tmp"
+  curl --proto '=https' -fsSL "$SPAWN_INSTALLER" -o "$spawn_tmp"
   bash "$spawn_tmp"
   rm -f "$spawn_tmp"
   trap - EXIT INT TERM
