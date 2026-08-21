@@ -25,10 +25,25 @@ BUN_TERMUX_REPO="https://github.com/Happ1ness-dev/bun-termux.git"
 BUN_TERMUX_REF="8aa2fe203d36434cdb85d1c55b2c9cfa416abfaa"
 SPAWN_INSTALLER="https://openrouter.ai/labs/spawn/cli/install.sh"
 
-log()  { printf '\033[0;34m[spawn]\033[0m %s\n' "$*"; }
-ok()   { printf '\033[0;32m[spawn] ✓\033[0m %s\n' "$*"; }
-warn() { printf '\033[0;33m[spawn] ⚠\033[0m %s\n' "$*"; }
-err()  { printf '\033[0;31m[spawn] ✖\033[0m %s\n' "$*" >&2; }
+# Color support respecting NO_COLOR (https://no-color.org) and stdout/stderr TTY capability
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  C_BLUE='\033[0;34m'
+  C_GREEN='\033[0;32m'
+  C_YELLOW='\033[0;33m'
+  C_RED='\033[0;31m'
+  C_RESET='\033[0m'
+else
+  C_BLUE=''
+  C_GREEN=''
+  C_YELLOW=''
+  C_RED=''
+  C_RESET=''
+fi
+
+log()  { printf '%s[spawn]%s %s\n' "$C_BLUE" "$C_RESET" "$*"; }
+ok()   { printf '%s[spawn] ✓%s %s\n' "$C_GREEN" "$C_RESET" "$*"; }
+warn() { printf '%s[spawn] ⚠%s %s\n' "$C_YELLOW" "$C_RESET" "$*"; }
+err()  { printf '%s[spawn] ✖%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; }
 
 # ---------------------------------------------------------------------------
 # Help mode: display usage information.
@@ -67,7 +82,7 @@ if [ "${1:-}" = "--verify" ]; then
     warn "bun missing"
   fi
   command -v spawn    >/dev/null 2>&1 && spawn --help >/dev/null 2>&1 && ok "spawn present" || warn "spawn missing"
-  [ -n "${OPENROUTER_API_KEY:-}" ] && ok "OPENROUTER_API_KEY set" || warn "OPENROUTER_API_KEY not set"
+  [ -n "${OPENROUTER_API_KEY:-}" ] && ok "OPENROUTER_API_KEY set" || warn "OPENROUTER_API_KEY not set (run: export OPENROUTER_API_KEY=\"your_key\")"
   # PATH check: does it actually contain the bun + local bin dirs?
   case ":$PATH:" in
     *":$HOME/.bun/bin:"*)  ok "PATH has ~/.bun/bin" ;;
