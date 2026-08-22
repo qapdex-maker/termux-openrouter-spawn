@@ -132,6 +132,7 @@ if command -v bun >/dev/null 2>&1; then
 else
   log "Cloning bun-termux (pinned: $BUN_TERMUX_REF)..."
   tmp="$(mktemp -d)"
+  chmod 700 "$tmp" # Security: restrict temp directory permissions
   trap 'rm -rf "$tmp"' EXIT INT TERM
   mkdir -p "$tmp/bun-termux"
   cd "$tmp/bun-termux"
@@ -204,8 +205,14 @@ else
   warn "Verify the source at $SPAWN_INSTALLER before trusting it in production."
   # Download to a temporary file before execution to prevent partial script execution on network interruption
   spawn_tmp="$(mktemp)"
+  chmod 600 "$spawn_tmp" # Security: restrict temp file permissions
   trap 'rm -f "$spawn_tmp"' EXIT INT TERM
-  curl --proto '=https' -fsSL "$SPAWN_INSTALLER" -o "$spawn_tmp"
+  # Security: enforce TLS 1.2+ and set connection timeout to prevent TLS downgrade / hanging
+  curl --proto '=https' --tlsv1.2 --connect-timeout 15 -fsSL "$SPAWN_INSTALLER" -o "$spawn_tmp"
+  if [ ! -s "$spawn_tmp" ]; then
+    err "Downloaded spawn installer is empty or missing."
+    exit 1
+  fi
   bash "$spawn_tmp"
   rm -f "$spawn_tmp"
   trap - EXIT INT TERM
