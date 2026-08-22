@@ -46,16 +46,24 @@ warn() { printf '%s[spawn] ⚠%s %s\n' "$C_YELLOW" "$C_RESET" "$*"; }
 err()  { printf '%s[spawn] ✖%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; }
 
 # ---------------------------------------------------------------------------
-# Help mode: display usage information.
+# Options handling
 # ---------------------------------------------------------------------------
-if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
-  printf "Usage: install.sh [--verify | -h | --help]\n\n"
-  printf "Options:\n"
-  printf "  (no args)    Full installation of Bun (glibc) and OpenRouter Spawn CLI\n"
-  printf "  --verify     Check current environment without changing anything\n"
-  printf "  -h, --help   Display this help message\n"
-  exit 0
-fi
+case "${1:-}" in
+  -h|--help)
+    printf "Usage: install.sh [--verify | -h | --help]\n\n"
+    printf "Options:\n"
+    printf "  (no args)    Full installation of Bun (glibc) and OpenRouter Spawn CLI\n"
+    printf "  --verify     Check current environment without changing anything\n"
+    printf "  -h, --help   Display this help message\n"
+    exit 0
+    ;;
+  ""|--verify)
+    ;;
+  *)
+    err "Unknown option '$1'. Use -h or --help for usage information."
+    exit 1
+    ;;
+esac
 
 is_termux() {
   [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux/files/usr"* ]]
