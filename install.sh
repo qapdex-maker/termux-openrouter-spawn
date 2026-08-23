@@ -104,8 +104,6 @@ fi
 # ---------------------------------------------------------------------------
 log "Checking GLIBC repo and toolchain packages..."
 
-# Bolt optimization: Skip network-bound 'pkg update' and 'pkg install' when required
-# toolchain packages are already installed. Reduces step time from ~15-30s to <0.1s on re-runs.
 is_installed() {
   dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "ok installed"
 }
@@ -119,9 +117,6 @@ fi
 REQUIRED_PKGS=(git curl clang make glibc-runner python proot)
 MISSING_PKGS=()
 
-# Bolt optimization: Batch query package statuses in a single dpkg-query call
-# and check package presence using native Bash pattern matching instead of spawning
-# grep in a loop. Reduces process execution overhead to a single command (~0.018s).
 INSTALLED_LIST=" $(dpkg-query -W -f='${Package}\t${Status}\n' "${REQUIRED_PKGS[@]}" 2>/dev/null | grep "ok installed" | awk '{print $1}' | tr '\n' ' ' || true)"
 
 for pkg in "${REQUIRED_PKGS[@]}"; do
@@ -152,8 +147,6 @@ else
   git remote add origin "$BUN_TERMUX_REPO"
   git fetch --depth 1 origin "$BUN_TERMUX_REF"
   git checkout FETCH_HEAD
-  # Bolt optimization: enable multi-threaded compilation using available CPU cores (nproc)
-  # Significantly speeds up compilation time on multi-core mobile processors (~50-70% speedup).
   NPROC="$(nproc 2>/dev/null || echo 2)"
   make -j"$NPROC" && make install
   cd "$HOME"
