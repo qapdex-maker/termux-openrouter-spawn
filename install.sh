@@ -24,6 +24,8 @@ BUN_TERMUX_REPO="https://github.com/Happ1ness-dev/bun-termux.git"
 # Security: Pin to exact commit SHA to prevent supply chain security risks from branch updates.
 BUN_TERMUX_REF="8aa2fe203d36434cdb85d1c55b2c9cfa416abfaa"
 SPAWN_INSTALLER="https://openrouter.ai/labs/spawn/cli/install.sh"
+# Security: Pin installer SHA-256 to prevent execution of tampered/unverified remote scripts.
+SPAWN_INSTALLER_SHA256="f9ebfe51747f03f71f78bad2a91aaee67d12b662e27118e9b1ddccc91306dc9e"
 
 # Color support respecting NO_COLOR (https://no-color.org) and stdout/stderr TTY capability
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
@@ -219,6 +221,12 @@ else
   spawn_tmp="$(mktemp)"
   trap 'rm -f "$spawn_tmp"' EXIT INT TERM
   curl --proto '=https' -fsSL "$SPAWN_INSTALLER" -o "$spawn_tmp"
+  # Verify SHA-256 checksum before executing remote installer script
+  actual_sha256="$(sha256sum "$spawn_tmp" | awk '{print $1}')"
+  if [ "$actual_sha256" != "$SPAWN_INSTALLER_SHA256" ]; then
+    err "Checksum mismatch for OpenRouter Spawn installer! Expected: $SPAWN_INSTALLER_SHA256, Got: $actual_sha256"
+    exit 1
+  fi
   bash "$spawn_tmp"
   rm -f "$spawn_tmp"
   trap - EXIT INT TERM
