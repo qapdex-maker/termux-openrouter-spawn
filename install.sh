@@ -70,7 +70,7 @@ is_termux() {
 }
 
 if ! is_termux; then
-  err "This script is for Termux/Android only (no TERMUX_VERSION / PREFIX)."
+  err "This script is for Termux/Android only (no TERMUX_VERSION / PREFIX environment variables detected)."
   exit 1
 fi
 
@@ -87,14 +87,14 @@ if [ "${1:-}" = "--verify" ]; then
       ok "bun present"
     fi
   else
-    warn "bun missing"
+    warn "bun missing (run 'bash install.sh' to install)"
   fi
-  command -v spawn    >/dev/null 2>&1 && spawn --help >/dev/null 2>&1 && ok "spawn present" || warn "spawn missing"
+  command -v spawn    >/dev/null 2>&1 && spawn --help >/dev/null 2>&1 && ok "spawn present" || warn "spawn missing (run 'bash install.sh' to install)"
   [ -n "${OPENROUTER_API_KEY:-}" ] && ok "OPENROUTER_API_KEY set" || warn "OPENROUTER_API_KEY not set (run: export OPENROUTER_API_KEY=\"your_key\")"
   # PATH check: does it actually contain the bun + local bin dirs?
   case ":$PATH:" in
     *":$HOME/.bun/bin:"*)  ok "PATH has ~/.bun/bin" ;;
-    *)                     warn "PATH missing ~/.bun/bin" ;;
+    *)                     warn "PATH missing ~/.bun/bin (run: source ~/.bashrc)" ;;
   esac
   exit 0
 fi
