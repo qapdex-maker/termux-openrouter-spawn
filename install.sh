@@ -50,14 +50,14 @@ err()  { printf '%s[spawn] ✖%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; }
 # ---------------------------------------------------------------------------
 case "${1:-}" in
   -h|--help)
-    printf "Usage: install.sh [--verify | -h | --help]\n\n"
+    printf "Usage: install.sh [-v | --verify | -h | --help]\n\n"
     printf "Options:\n"
-    printf "  (no args)    Full installation of Bun (glibc) and OpenRouter Spawn CLI\n"
-    printf "  --verify     Check current environment without changing anything\n"
-    printf "  -h, --help   Display this help message\n"
+    printf "  (no args)       Full installation of Bun (glibc) and OpenRouter Spawn CLI\n"
+    printf "  -v, --verify    Check current environment without changing anything\n"
+    printf "  -h, --help      Display this help message\n"
     exit 0
     ;;
-  ""|--verify)
+  ""|-v|--verify)
     ;;
   *)
     err "Unknown option '$1'. Use -h or --help for usage information."
@@ -77,7 +77,7 @@ fi
 # ---------------------------------------------------------------------------
 # Verify mode: report state, do not change anything.
 # ---------------------------------------------------------------------------
-if [ "${1:-}" = "--verify" ]; then
+if [ "${1:-}" = "--verify" ] || [ "${1:-}" = "-v" ]; then
   log "Verification mode"
   if command -v bun >/dev/null 2>&1; then
     bun_ver="$(bun --version 2>/dev/null || true)"
@@ -222,6 +222,13 @@ fi
 # ---------------------------------------------------------------------------
 ok "Install complete."
 log "Next steps:"
-log "  export OPENROUTER_API_KEY=\"your_key_here\""
-log "  spawn"
-log "Run 'bash install.sh --verify' any time to check the environment."
+if [ -z "${OPENROUTER_API_KEY:-}" ]; then
+  log "  1. Set your OpenRouter API Key:"
+  log "     export OPENROUTER_API_KEY=\"your_key_here\""
+  log "  2. Launch OpenRouter Spawn CLI:"
+  log "     spawn"
+else
+  log "  1. Launch OpenRouter Spawn CLI:"
+  log "     spawn"
+fi
+log "Run 'bash install.sh -v' or 'bash install.sh --verify' any time to check the environment."
