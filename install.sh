@@ -2,14 +2,8 @@
 # termux-openrouter-spawn — install Bun (glibc) + OpenRouter Spawn CLI on Termux.
 #
 # This script codifies the README steps so they are testable and copy-paste
-# safe. It fixes three issues the plain README blocks had:
-#   1. PATH was written literally ("HOME/.local/bin:PATH") — now correctly
-#      expands to $HOME/.local/bin:$PATH.
-#   2. termux-chroot was exec'd unconditionally in ~/.bashrc — now gated to
-#      interactive shells only, so non-interactive tools/scripts keep working.
-#   3. Third-party deps (bun-termux, the Spawn installer) are pinned so the
-#      guide does not silently break if upstream moves.
-#
+# safe.
+#   
 # Usage:
 #   bash install.sh            # full install
 #   bash install.sh --verify    # only check current environment
@@ -224,4 +218,4 @@ ok "Install complete."
 log "Next steps:"
 log "  export OPENROUTER_API_KEY=\"your_key_here\""
 log "  spawn"
-log "Run 'bash install.sh --verify' any time to check the environment."
+log "Run 'bash install.sh --verify' any time to check the environment." 
